@@ -105,4 +105,52 @@ public class TratamentoRepository {
         }
         return lista;
     }
+
+    public void vincularTratamentosEmLote(Long idConsulta, List<Long> idsTratamentos) {
+        String sql = "INSERT INTO consulta_tratamento (consulta_id, tratamento_id) VALUES (?, ?)";
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = ConexaoDB.getConnection();
+
+            conn.setAutoCommit(false);
+
+            stmt = conn.prepareStatement(sql);
+
+            for (Long idTratamento : idsTratamentos) {
+                if (idTratamento == 999) {
+                    throw new RuntimeException("Erro Simulado: Tratamento 999 é inválido!");
+                }
+
+                stmt.setLong(1, idConsulta);
+                stmt.setLong(2, idTratamento);
+                stmt.executeUpdate();
+            }
+
+            conn.commit();
+            System.out.println("Transação concluída! Todos os " + idsTratamentos.size() + " tratamentos foram salvos.");
+
+        } catch (Exception e) {
+
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                    System.err.println("ERRO DETECTADO! Realizando Rollback (desfazendo alterações)...");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            throw new RuntimeException("Falha na transação em lote", e);
+
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
