@@ -7,8 +7,12 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TratamentoRepository {
+
+    private static final Logger logger = Logger.getLogger(TratamentoRepository.class.getName());
 
     public void salvar(Tratamento tratamento) {
         String sql = "INSERT INTO tratamento (descricao, valor) VALUES (?, ?)";
@@ -140,7 +144,7 @@ public class TratamentoRepository {
                     System.err.println("ERRO DETECTADO! Realizando Rollback (desfazendo alterações)...");
                 }
             } catch (SQLException ex) {
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, "Ocorreu um erro no banco de dados", ex);
             }
             throw new RuntimeException("Falha na transação em lote", e);
 
@@ -149,7 +153,7 @@ public class TratamentoRepository {
                 if (stmt != null) stmt.close();
                 if (conn != null) conn.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Ocorreu um erro no banco de dados", e);
             }
         }
     }
