@@ -3,72 +3,81 @@ package br.com.odontosys;
 import br.com.odontosys.domain.Consulta;
 import br.com.odontosys.domain.Dentista;
 import br.com.odontosys.domain.Paciente;
+import br.com.odontosys.domain.Tratamento;
 import br.com.odontosys.domain.enums.StatusConsulta;
+import br.com.odontosys.repository.ConsultaRepository;
 import br.com.odontosys.repository.DentistaRepository;
 import br.com.odontosys.repository.PacienteRepository;
-import br.com.odontosys.service.ConsultaService;
+import br.com.odontosys.repository.TratamentoRepository; // Novo import
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("=== ODONTOSYS: Teste de Regras de Negócio ===");
+        System.out.println("=== ODONTOSYS: Fluxo Clínico Completo ===");
 
-        ConsultaService consultaService = new ConsultaService();
         PacienteRepository pacienteRepo = new PacienteRepository();
         DentistaRepository dentistaRepo = new DentistaRepository();
+        ConsultaRepository consultaRepo = new ConsultaRepository();
+        TratamentoRepository tratamentoRepo = new TratamentoRepository();
 
-        System.out.println("\n-> Verificando dados iniciais...");
-
-
-        Paciente p = pacienteRepo.buscarPorId(1L); // Tenta achar o ID 1
+        Paciente p = pacienteRepo.buscarPorId(1L);
         if (p == null) {
-            System.out.println("Paciente ID 1 não encontrado. Criando novo...");
             p = new Paciente(null, "João da Silva", LocalDate.of(1990, 1, 15), "11-99999-9999", "joao@email.com");
             pacienteRepo.salvar(p);
-        } else {
-            System.out.println("Paciente ID 1 encontrado: " + p.getNomeCompleto());
         }
 
         Dentista d = dentistaRepo.buscarPorId(1L);
         if (d == null) {
-            System.out.println("Dentista ID 1 não encontrado. Criando novo...");
             d = new Dentista(null, "Dra. Marcia", "Endodontia", "CRO-RJ-555", "21-8888-8888");
             dentistaRepo.salvar(d);
-        } else {
-            System.out.println("Dentista ID 1 encontrado: " + d.getNome());
         }
 
-        System.out.println("\n1. Tentando agendar para 10/10/2026 às 10:00...");
-        Consulta c1 = new Consulta();
-        c1.setData(LocalDate.of(2026, 10, 10));
-        c1.setHorario(LocalTime.of(10, 0));
-        c1.setStatus(StatusConsulta.AGENDADA);
-        c1.setPaciente(p);
-        c1.setDentista(d);
-
-        try {
-            consultaService.agendarConsulta(c1);
-            System.out.println("Sucesso: Primeira consulta marcada!");
-        } catch (Exception e) {
-            System.out.println("Aviso: " + e.getMessage());
+        Tratamento limpeza = tratamentoRepo.buscarPorId(1L);
+        if (limpeza == null) {
+            limpeza = new Tratamento(null, "Limpeza Completa", new BigDecimal("250.00"));
+            tratamentoRepo.salvar(limpeza);
         }
 
-        System.out.println("\n2. Tentando agendar OUTRO agendamento para o MESMO horário...");
-
-        Consulta c2 = new Consulta();
-        c2.setData(LocalDate.of(2026, 10, 10));
-        c2.setHorario(LocalTime.of(10, 0));
-        c2.setStatus(StatusConsulta.AGENDADA);
-        c2.setPaciente(p);
-        c2.setDentista(d);
-
-        try {
-            consultaService.agendarConsulta(c2);
-            System.out.println("ERRO: O sistema permitiu duplicidade! Algo está errado.");
-        } catch (Exception e) {
-            System.err.println("BLOQUEADO COM SUCESSO: " + e.getMessage());
+        Tratamento canal = tratamentoRepo.buscarPorId(2L);
+        if (canal == null) {
+            canal = new Tratamento(null, "Tratamento de Canal", new BigDecimal("800.00"));
+            tratamentoRepo.salvar(canal);
         }
+
+        Consulta consulta = new Consulta();
+        consulta.setData(LocalDate.now());
+        consulta.setHorario(LocalTime.now());
+        consulta.setStatus(StatusConsulta.REALIZADA);
+        consulta.setPaciente(p);
+        consulta.setDentista(d);
+
+        consultaRepo.agendar(consulta);
+
+        System.out.println("\n-> Adicionando procedimentos à consulta " + consulta.getId() + "...");
+
+        tratamentoRepo.adicionarTratamentoNaConsulta(consulta.getId(), limpeza.getId());
+
+        tratamentoRepo.adicionarTratamentoNaConsulta(consulta.getId(), canal.getId());
+
+        System.out.println("\n---------------- RESUMO DA CONSULTA ----------------");
+        System.out.println("Paciente: " + p.getNomeCompleto());
+        System.out.println("Dentista: " + d.getNome());
+        System.out.println("Procedimentos Realizados:");
+
+        List<Tratamento> realizados = tratamentoRepo.listarPorConsulta(consulta.getId());
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (Tratamento t : realizados) {
+            System.out.println("- " + t.getDescricao() + ": R$ " + t.getValor());
+            total = total.add(t.getValor());
+        }
+
+        System.out.println("----------------------------------------------------");
+        System.out.println("TOTAL A PAGAR: R$ " + total);
+        System.out.println("----------------------------------------------------");
     }
 }
