@@ -7,6 +7,8 @@ import br.com.odontosys.domain.enums.StatusConsulta;
 import br.com.odontosys.util.ConexaoDB;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,5 +98,34 @@ public class ConsultaRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao cancelar consulta", e);
         }
+    }
+
+    public boolean existeConsultaNoHorario(Long idDentista, LocalDate data, LocalTime horario) {
+        String sql = """
+            SELECT COUNT(*) FROM consulta 
+            WHERE dentista_id = ? 
+            AND data_consulta = ? 
+            AND horario = ? 
+            AND status <> 'CANCELADA' 
+            """;
+
+        try (Connection conn = ConexaoDB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, idDentista);
+            stmt.setDate(2, Date.valueOf(data));
+            stmt.setTime(3, Time.valueOf(horario));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int quantidade = rs.getInt(1);
+                    return quantidade > 0; // Se for maior que 0, retorna true (existe conflito)
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao verificar disponibilidade", e);
+        }
+        return false; // Se der algo errado ou não achar nada, assume false
     }
 }
