@@ -1,5 +1,8 @@
 package dao;
 
+import br.com.odontosys.domain.Dentista;
+import config.ConfiguracaoJDBC;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,10 +10,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-// IMPORTANTE: Aqui você deve importar sua classe de modelo e configuração
-// Se elas estiverem em outro pacote, o IntelliJ vai sugerir o import (Alt+Enter)
-import model.Dentista;
-import config.ConfiguracaoJDBC;
 
 public class DentistaDaoH2 implements IDao<Dentista> {
 
@@ -25,21 +24,21 @@ public class DentistaDaoH2 implements IDao<Dentista> {
     public Dentista salvar(Dentista dentista) {
         logger.info("Registrando dentista: " + dentista.getNome());
         Connection connection = configuracaoJDBC.getConnection();
-        PreparedStatement stmt = null;
+
+        String sql = "INSERT INTO dentistas (nome, especialidade, cro, telefone) VALUES (?, ?, ?, ?)";
 
         try {
-            String sql = "INSERT INTO dentistas (nome, sobrenome, matricula) VALUES (?, ?, ?)";
-            stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
+            PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, dentista.getNome());
-            stmt.setString(2, dentista.getSobrenome());
-            stmt.setString(3, dentista.getMatricula());
+            stmt.setString(2, dentista.getEspecialidade());
+            stmt.setString(3, dentista.getCro());
+            stmt.setString(4, dentista.getTelefone());
 
             stmt.executeUpdate();
 
             ResultSet keys = stmt.getGeneratedKeys();
             if(keys.next()) {
-                dentista.setId(keys.getInt(1));
+                dentista.setId(keys.getLong(1));
             }
 
             stmt.close();
@@ -54,22 +53,22 @@ public class DentistaDaoH2 implements IDao<Dentista> {
     public List<Dentista> buscarTodos() {
         logger.info("Buscando todos os dentistas...");
         Connection connection = configuracaoJDBC.getConnection();
-        PreparedStatement stmt = null;
         List<Dentista> dentistas = new ArrayList<>();
 
+        String sql = "SELECT * FROM dentistas";
+
         try {
-            String sql = "SELECT * FROM dentistas";
-            stmt = connection.prepareStatement(sql);
+            PreparedStatement stmt = connection.prepareStatement(sql);
             ResultSet result = stmt.executeQuery();
 
             while (result.next()) {
-                Integer id = result.getInt("id");
+                Long id = result.getLong("id");
                 String nome = result.getString("nome");
-                String sobrenome = result.getString("sobrenome");
-                String matricula = result.getString("matricula");
-                Dentista d = new Dentista(nome, sobrenome, matricula);
-                d.setId(id);
+                String especialidade = result.getString("especialidade");
+                String cro = result.getString("cro");
+                String telefone = result.getString("telefone");
 
+                Dentista d = new Dentista(id, nome, especialidade, cro, telefone);
                 dentistas.add(d);
             }
             stmt.close();
@@ -81,13 +80,13 @@ public class DentistaDaoH2 implements IDao<Dentista> {
     }
 
     @Override
-    public void excluir(Integer id) {
+    public void excluir(Long id) {
         logger.info("Excluindo dentista ID: " + id);
         Connection connection = configuracaoJDBC.getConnection();
         try {
             String sql = "DELETE FROM dentistas WHERE id = ?";
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, id);
+            stmt.setLong(1, id);
             stmt.execute();
             stmt.close();
             connection.close();
@@ -97,22 +96,23 @@ public class DentistaDaoH2 implements IDao<Dentista> {
     }
 
     @Override
-    public Dentista buscarPorId(Integer id) {
+    public Dentista buscarPorId(Long id) {
         logger.info("Buscando dentista ID: " + id);
         Connection connection = configuracaoJDBC.getConnection();
         Dentista dentista = null;
         try {
             String sql = "SELECT * FROM dentistas WHERE id = ?";
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, id);
+            stmt.setLong(1, id);
             ResultSet result = stmt.executeQuery();
 
             if (result.next()) {
                 String nome = result.getString("nome");
-                String sobrenome = result.getString("sobrenome");
-                String matricula = result.getString("matricula");
-                dentista = new Dentista(nome, sobrenome, matricula);
-                dentista.setId(id);
+                String especialidade = result.getString("especialidade");
+                String cro = result.getString("cro");
+                String telefone = result.getString("telefone");
+
+                dentista = new Dentista(id, nome, especialidade, cro, telefone);
             }
             stmt.close();
             connection.close();

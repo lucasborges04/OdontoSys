@@ -8,7 +8,7 @@ public interface IDao<T> {
 
     List<T> buscarTodos();
 
-    void excluir(Integer id);
+    void excluir(Long id);
 
-    T buscarPorId(Integer id);
+    T buscarPorId(Long id);
 }
