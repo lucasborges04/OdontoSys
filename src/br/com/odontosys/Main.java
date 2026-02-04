@@ -25,8 +25,18 @@ public class Main {
         DentistaDaoH2 dao = new DentistaDaoH2(configuracao);
 
         Dentista d = new Dentista(null, "Dr. House", "Diagnóstico", "CRO-1234", "9999-8888");
-        dao.salvar(d);
+        //dao.salvar(d);
 
         System.out.println("Comando enviado! Verifique o banco de dados.");
+
+        System.out.println("\n--- LISTA DE DENTISTAS NO BANCO ---");
+
+        List<Dentista> lista = dao.buscarTodos();
+
+        for (Dentista dentista : lista) {
+            System.out.println("ID: " + dentista.getId() +
+                    " | Nome: " + dentista.getNome() +
+                    " | CRO: " + dentista.getCro());
+        }
     }
 }
