@@ -1,42 +1,42 @@
 package br.com.odontosys;
 
-import br.com.odontosys.domain.Consulta;
 import br.com.odontosys.domain.Dentista;
-import br.com.odontosys.domain.Paciente;
-import br.com.odontosys.domain.Tratamento;
-import br.com.odontosys.domain.enums.StatusConsulta;
-import br.com.odontosys.repository.ConsultaRepository;
-import br.com.odontosys.repository.DentistaRepository;
-import br.com.odontosys.repository.PacienteRepository;
-import br.com.odontosys.repository.TratamentoRepository;
 import config.ConfiguracaoJDBC;
 import dao.DentistaDaoH2;
+import service.DentistaService;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        ConfiguracaoJDBC configuracao = new ConfiguracaoJDBC();
 
+        ConfiguracaoJDBC configuracao = new ConfiguracaoJDBC();
         DentistaDaoH2 dao = new DentistaDaoH2(configuracao);
 
-        Dentista d = new Dentista(null, "Dr. House", "Diagnóstico", "CRO-1234", "9999-8888");
-        //dao.salvar(d);
+        DentistaService service = new DentistaService(dao);
 
-        System.out.println("Comando enviado! Verifique o banco de dados.");
+        System.out.println("--- INICIANDO SISTEMA ---");
 
-        System.out.println("\n--- LISTA DE DENTISTAS NO BANCO ---");
+        try {
+            Dentista d1 = new Dentista(null, "Dr. House Clone", "Clonagem", "CRO-1234", "0000-0000");
+            service.registrarDentista(d1);
+            System.out.println("Sucesso! Dentista cadastrado.");
+        } catch (Exception e) {
+            System.err.println("FALHA AO CADASTRAR: " + e.getMessage());
+        }
 
-        List<Dentista> lista = dao.buscarTodos();
+        try {
+            Dentista d2 = new Dentista(null, "Dra. Cuca", "Ortodontia", "CRO-9999", "1111-2222");
+            service.registrarDentista(d2);
+            System.out.println("\nSucesso! " + d2.getNome() + " foi cadastrada.");
+        } catch (Exception e) {
+            System.err.println("FALHA: " + e.getMessage());
+        }
 
-        for (Dentista dentista : lista) {
-            System.out.println("ID: " + dentista.getId() +
-                    " | Nome: " + dentista.getNome() +
-                    " | CRO: " + dentista.getCro());
+        System.out.println("\n--- LISTAGEM FINAL ---");
+        List<Dentista> lista = service.listarTodos();
+        for (Dentista d : lista) {
+            System.out.println(d.getNome() + " - " + d.getCro());
         }
     }
 }
