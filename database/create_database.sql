@@ -14,7 +14,7 @@ CREATE TABLE paciente (
     nome_completo VARCHAR(100) NOT NULL,
     data_nascimento DATE NOT NULL,
     telefone VARCHAR(20),
-    email VARCHAR(100)
+    email VARCHAR(100) UNIQUE
 );
 
 CREATE TABLE dentista (

@@ -29,7 +29,7 @@ public class PacienteDaoH2 implements IDao<Paciente> {
                 "nome_completo VARCHAR(100) NOT NULL, " +
                 "data_nascimento VARCHAR(50) NOT NULL, " +
                 "telefone VARCHAR(20), " +
-                "email VARCHAR(100))";
+                "email VARCHAR(100) UNIQUE)";
 
         try (Connection connection = configuracaoJDBC.getConnection();
              Statement stmt = connection.createStatement()) {
