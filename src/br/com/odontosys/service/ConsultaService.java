@@ -27,11 +27,9 @@ public class ConsultaService {
             throw new RuntimeException("Erro: Data e Horário da consulta são obrigatórios.");
         }
 
-
         if (consulta.getData().isBefore(LocalDate.now())) {
             throw new RuntimeException("Erro: Não é possível agendar consultas para uma data passada.");
         }
-
         if (consulta.getData().equals(LocalDate.now()) && consulta.getHorario().isBefore(LocalTime.now())) {
             throw new RuntimeException("Erro: Este horário já passou. Escolha um horário futuro.");
         }
