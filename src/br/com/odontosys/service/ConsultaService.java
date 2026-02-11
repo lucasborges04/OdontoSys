@@ -1,33 +1,61 @@
 package br.com.odontosys.service;
 
 import br.com.odontosys.domain.Consulta;
-import br.com.odontosys.repository.ConsultaRepository;
+import dao.IDao;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 public class ConsultaService {
 
-    private final ConsultaRepository repository;
+    private final IDao<Consulta> consultaDao;
 
-    public ConsultaService() {
-        this.repository = new ConsultaRepository();
+    public ConsultaService(IDao<Consulta> consultaDao) {
+        this.consultaDao = consultaDao;
     }
 
-    public void agendarConsulta(Consulta consulta) {
-        boolean existeConflito = repository.existeConsultaNoHorario(
-                consulta.getDentista().getId(),
-                consulta.getData(),
-                consulta.getHorario()
-        );
+    public Consulta agendar(Consulta consulta) {
 
-        if (existeConflito) {
-            throw new IllegalArgumentException("Erro: O dentista já possui agendamento para este dia e horário!");
+        if (consulta.getDentista() == null || consulta.getDentista().getId() == null) {
+            throw new RuntimeException("Erro: É obrigatório informar um Dentista válido.");
+        }
+        if (consulta.getPaciente() == null || consulta.getPaciente().getId() == null) {
+            throw new RuntimeException("Erro: É obrigatório informar um Paciente válido.");
+        }
+        if (consulta.getData() == null || consulta.getHorario() == null) {
+            throw new RuntimeException("Erro: Data e Horário da consulta são obrigatórios.");
         }
 
-        repository.agendar(consulta);
-        System.out.println(">>> Regra de negócio validada: Agendamento permitido.");
+
+        if (consulta.getData().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Erro: Não é possível agendar consultas para uma data passada.");
+        }
+
+        if (consulta.getData().equals(LocalDate.now()) && consulta.getHorario().isBefore(LocalTime.now())) {
+            throw new RuntimeException("Erro: Este horário já passou. Escolha um horário futuro.");
+        }
+
+        List<Consulta> todasConsultas = consultaDao.buscarTodos();
+
+        for (Consulta c : todasConsultas) {
+            if (c.getDentista().getId().equals(consulta.getDentista().getId()) &&
+                    c.getData().equals(consulta.getData()) &&
+                    c.getHorario().equals(consulta.getHorario())) {
+
+                throw new RuntimeException("Erro: O dentista " + c.getDentista().getNome() +
+                        " já possui agendamento para este dia e horário!");
+            }
+        }
+
+        return consultaDao.salvar(consulta);
     }
 
-    public void listarConsultas() {
-        var lista = repository.listarTodas();
-        lista.forEach(c -> System.out.println(c.getId() + " - " + c.getData() + " - " + c.getDentista().getNome()));
+    public void cancelar(Long id) {
+        consultaDao.excluir(id);
+    }
+
+    public List<Consulta> buscarTodas() {
+        return consultaDao.buscarTodos();
     }
 }
