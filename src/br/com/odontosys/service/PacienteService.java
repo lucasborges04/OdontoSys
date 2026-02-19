@@ -16,7 +16,7 @@ public class PacienteService {
         List<Paciente> todos = pacienteDao.buscarTodos();
 
         for (Paciente p : todos) {
-            if (p.getEmail() != null && p.getEmail().equals(paciente.getEmail())) {
+            if (p.getEmail() != null && paciente.getEmail() != null && p.getEmail().equalsIgnoreCase(paciente.getEmail())) {
                 throw new RuntimeException("Erro: Paciente já cadastrado com o e-mail: " + paciente.getEmail());
             }
         }
