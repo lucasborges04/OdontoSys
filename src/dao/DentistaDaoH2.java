@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DentistaDaoH2 implements IDao<Dentista> {
@@ -18,6 +19,23 @@ public class DentistaDaoH2 implements IDao<Dentista> {
 
     public DentistaDaoH2(ConfiguracaoJDBC configuracaoJDBC) {
         this.configuracaoJDBC = configuracaoJDBC;
+        criarTabelaSeNaoExistir();
+    }
+
+    private void criarTabelaSeNaoExistir() {
+        String sql = "CREATE TABLE IF NOT EXISTS dentistas (" +
+                "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                "nome VARCHAR(100) NOT NULL, " +
+                "especialidade VARCHAR(100) NOT NULL, " +
+                "telefone VARCHAR(20), " +
+                "cro VARCHAR(20) NOT NULL UNIQUE)";
+
+        try (Connection connection = configuracaoJDBC.getConnection();
+             Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Erro ao se conectar no banco de dados", e);
+        }
     }
 
     @Override

@@ -3,7 +3,7 @@ package br.com.odontosys.service; // Note que o pacote continua o mesmo!
 import br.com.odontosys.domain.Dentista;
 import config.ConfiguracaoJDBC;
 import dao.DentistaDaoH2;
-import service.DentistaService;
+import br.com.odontosys.service.DentistaService;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

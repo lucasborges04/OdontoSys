@@ -3,7 +3,7 @@ package br.com.odontosys;
 import br.com.odontosys.domain.Dentista;
 import config.ConfiguracaoJDBC;
 import dao.DentistaDaoH2;
-import service.DentistaService;
+import br.com.odontosys.service.DentistaService;
 
 import java.util.List;
 

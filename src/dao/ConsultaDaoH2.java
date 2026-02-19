@@ -24,19 +24,22 @@ public class ConsultaDaoH2 implements IDao<Consulta> {
     }
 
     private void criarTabelaSeNaoExistir() {
-        String sql = "CREATE TABLE IF NOT EXISTS consultas (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                "data DATE NOT NULL, " +
-                "horario TIME NOT NULL, " +
-                "status VARCHAR(50), NOT NULL COMMENT 'Enum: AGENDADA, REALIZADA, CANCELADA, NAO_COMPARECEU', " +
-                "paciente_id BIGINT, " +
-                "dentista_id BIGINT, " +
-                "FOREIGN KEY (dentista_id) REFERENCES dentistas(id), " +
-                "FOREIGN KEY (paciente_id) REFERENCES pacientes(id))";
-
         try (Connection connection = configuracaoJDBC.getConnection();
-             Statement stmt = connection.createStatement()) {
+             Statement stmt = connection.createStatement()){
+            stmt.execute("DROP TABLE IF EXISTS consultas");
+
+            String sql = "CREATE TABLE IF NOT EXISTS consultas (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "data DATE, " +
+                    "horario TIME, " +
+                    "status VARCHAR(50), " +
+                    "paciente_id BIGINT, " +
+                    "dentista_id BIGINT, " +
+                    "FOREIGN KEY (paciente_id) REFERENCES pacientes(id), " +
+                    "FOREIGN KEY (dentista_id) REFERENCES dentistas(id))";
+
             stmt.execute(sql);
+
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Falha ao criar a tabela de consultas no banco de dados", e);
         }
@@ -83,10 +86,10 @@ public class ConsultaDaoH2 implements IDao<Consulta> {
         List<Consulta> consultas = new ArrayList<>();
 
         String sql = "SELECT c.id, c.data, c.horario, c.status, " +
-                "p.id AS p_id, p.nome_completo AS p_nome, p.data_nascimento AS p_dataNascimento, p.telefone, p.email" +
-                "d.id AS d_id, d.nome AS d_nome, d.especialidade AS d_especialidade, d.cro, d.telefone" +
+                "d.id AS d_id, d.nome AS d_nome, d.especialidade AS d_especialidade, d.cro AS d_cro, d.telefone AS d_telefone, " +
+                "p.id AS p_id, p.nome_completo AS p_nome, p.data_nascimento AS p_dataNascimento, p.telefone AS p_telefone, p.email AS p_email " +
                 "FROM consultas c " +
-                "INNER JOIN pacientes p ON c.paciente_id = p.id" +
+                "INNER JOIN pacientes p ON c.paciente_id = p.id " +
                 "INNER JOIN dentistas d ON c.dentista_id = d.id";
 
         try {
@@ -98,15 +101,15 @@ public class ConsultaDaoH2 implements IDao<Consulta> {
                 dentista.setId(result.getLong("d_id"));
                 dentista.setNome(result.getString("d_nome"));
                 dentista.setEspecialidade(result.getString("d_especialidade"));
-                dentista.setCro(result.getString("cro"));
-                dentista.setTelefone(result.getString("telefone"));
+                dentista.setCro(result.getString("d_cro"));
+                dentista.setTelefone(result.getString("d_telefone"));
 
                 Paciente paciente = new Paciente();
                 paciente.setId(result.getLong("p_id"));
                 paciente.setNomeCompleto(result.getString("p_nome"));
                 paciente.setDataNascimento(LocalDate.parse(result.getString("p_dataNascimento")));
-                paciente.setTelefone(result.getString("telefone"));
-                paciente.setEmail(result.getString("email"));
+                paciente.setTelefone(result.getString("p_telefone"));
+                paciente.setEmail(result.getString("p_email"));
 
                 Consulta c = new Consulta(
                         result.getLong("id"),

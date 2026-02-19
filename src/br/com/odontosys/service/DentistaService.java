@@ -1,4 +1,4 @@
-package service;
+package br.com.odontosys.service;
 
 import br.com.odontosys.domain.Dentista;
 import dao.IDao;

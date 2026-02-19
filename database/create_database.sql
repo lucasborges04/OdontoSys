@@ -20,7 +20,7 @@ CREATE TABLE paciente (
 CREATE TABLE dentista (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    especialidade VARCHAR(100),
+    especialidade VARCHAR(100) NOT NULL,
     cro VARCHAR(20) NOT NULL UNIQUE COMMENT 'Conselho Regional de Odontologia',
     telefone VARCHAR(20)
 );
