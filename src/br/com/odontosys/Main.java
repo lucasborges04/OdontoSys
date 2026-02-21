@@ -131,13 +131,21 @@ public class Main {
 
         System.out.print("ID do Paciente: ");
         Long pacienteId = Long.parseLong(scanner.nextLine());
-        Paciente paciente = new Paciente();
-        paciente.setId(pacienteId);
+        Paciente paciente = pacienteService.buscarPorId(pacienteId);
+
+        if (paciente == null) {
+            System.out.println("ERRO: Agendamento cancelado. Não existe nenhum Paciente com o ID " + pacienteId + "!");
+            return;
+        }
 
         System.out.print("ID do Dentista: ");
         Long dentistaId = Long.parseLong(scanner.nextLine());
-        Dentista dentista = new Dentista();
-        dentista.setId(dentistaId);
+        Dentista dentista = dentistaService.buscarPorId(dentistaId);
+
+        if (dentista == null) {
+            System.out.println("ERRO: Agendamento cancelado. Não existe nenhum Dentista com o ID " + dentistaId + "!");
+            return;
+        }
 
         System.out.print("Data da Consulta (DD/MM/AAAA): ");
         LocalDate data = LocalDate.parse(scanner.nextLine(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -148,7 +156,8 @@ public class Main {
         Consulta consulta = new Consulta(null, data, horario, StatusConsulta.AGENDADA, paciente, dentista);
 
         Consulta agendada = consultaService.agendar(consulta);
-        System.out.println("Sucesso! Consulta agendada com o ID: " + agendada.getId());
+        System.out.println("Sucesso! Consulta agendada com o ID: " + agendada.getId() +
+                " para o paciente " + paciente.getNomeCompleto());
     }
 
     private static void listarConsultas() {

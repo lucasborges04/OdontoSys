@@ -27,4 +27,16 @@ public class DentistaService {
     public List<Dentista> listarTodos() {
         return dentistaDao.buscarTodos();
     }
+
+    public Dentista buscarPorId(Long id) {
+        List<Dentista> todos = listarTodos();
+
+        for (Dentista d : todos) {
+            if (d.getId().equals(id)) {
+                return d;
+            }
+        }
+        return null;
+    }
+
 }

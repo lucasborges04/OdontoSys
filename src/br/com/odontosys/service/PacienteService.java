@@ -27,4 +27,17 @@ public class PacienteService {
     public List<Paciente> buscarTodos() {
         return pacienteDao.buscarTodos();
     }
+
+    public Paciente buscarPorId(Long id) {
+        List<Paciente> todos = buscarTodos();
+
+        for (Paciente p : todos) {
+            if (p.getId().equals(id)) {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
 }
