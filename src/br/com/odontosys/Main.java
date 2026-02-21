@@ -37,6 +37,9 @@ public class Main {
             System.out.println("2. Cadastrar novo Dentista");
             System.out.println("3. Agendar Consulta");
             System.out.println("4. Listar todas as Consultas");
+            System.out.println("5. Listar todos os Pacientes"); // NOVO
+            System.out.println("6. Listar todos os Dentistas"); // NOVO
+            System.out.println("7. Cancelar uma Consulta");   // NOVO
             System.out.println("0. Sair do Sistema");
             System.out.print("-> Escolha uma opção: ");
 
@@ -56,6 +59,15 @@ public class Main {
                     case 4:
                         listarConsultas();
                         break;
+                    case 5:
+                        listarPacientes();
+                        break; // NOVO
+                    case 6:
+                        listarDentistas();
+                        break; // NOVO
+                    case 7:
+                        cancelarConsulta();
+                        break; // NOVO
                     case 0:
                         System.out.println("Encerrando o sistema... Até logo!");
                         break;
@@ -155,4 +167,52 @@ public class Main {
                     " | Status: " + c.getStatus());
         }
     }
+
+    private static void listarPacientes() {
+        System.out.println("\n--- LISTA DE PACIENTES ---");
+        List<Paciente> pacientes = pacienteService.buscarTodos();
+
+        if (pacientes.isEmpty()) {
+            System.out.println("Nenhum paciente cadastrado no sistema.");
+            return;
+        }
+
+        for (Paciente p : pacientes) {
+            System.out.println("ID: " + p.getId() +
+                    " | Nome: " + p.getNomeCompleto() +
+                    " | E-mail: " + p.getEmail() +
+                    " | Telefone: " + p.getTelefone());
+        }
+    }
+
+    private static void listarDentistas() {
+        System.out.println("\n--- LISTA DE DENTISTAS ---");
+        List<Dentista> dentistas = dentistaService.listarTodos();
+
+        if (dentistas.isEmpty()) {
+            System.out.println("Nenhum dentista cadastrado no sistema.");
+            return;
+        }
+
+        for (Dentista d : dentistas) {
+            System.out.println("ID: " + d.getId() +
+                    " | Nome: " + d.getNome() +
+                    " | Especialidade: " + d.getEspecialidade() +
+                    " | CRO: " + d.getCro());
+        }
+    }
+
+    private static void cancelarConsulta() {
+        System.out.println("\n--- CANCELAR CONSULTA ---");
+        listarConsultas();
+
+        System.out.print("\nDigite o ID da consulta que deseja cancelar (ou 0 para voltar): ");
+        long idConsulta = Long.parseLong(scanner.nextLine());
+
+        if (idConsulta == 0) return;
+
+        consultaService.cancelar(idConsulta);
+        System.out.println("Sucesso! A consulta ID " + idConsulta + " foi cancelada e excluída do sistema.");
+    }
+
 }
